@@ -1,0 +1,165 @@
+<!DOCTYPE html><html><head><meta name="generator" content="Hexo 3.8.0"><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta name="description" content="浅析gMSA"><meta name="keywords" content="gMSA,bloodhound"><meta name="author" content="rootrain"><meta name="copyright" content="rootrain"><title>浅析gMSA | rootrain's Home</title><link rel="shortcut icon" href="/melody-favicon.ico"><link rel="stylesheet" href="/css/index.css?version=1.6.1"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css?version=1.6.1"><link rel="dns-prefetch" href="https://cdn.staticfile.org"><link rel="dns-prefetch" href="https://cdn.bootcss.com"><link rel="dns-prefetch" href="https://creativecommons.org"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  }
+} </script></head><body><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div id="sidebar"><div class="toggle-sidebar-info text-center"><span data-toggle="Toggle article">Toggle site</span><hr></div><div class="sidebar-toc"><div class="sidebar-toc__title">Catalog</div><div class="sidebar-toc__progress"><span class="progress-notice">You've read</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar"></div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#0x01-静态密码"><span class="toc-number">1.</span> <span class="toc-text">0x01 静态密码</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#密码使用场景"><span class="toc-number">1.1.</span> <span class="toc-text">密码使用场景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#静态密码产生的问题"><span class="toc-number">1.2.</span> <span class="toc-text">静态密码产生的问题</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#0x02-gMSA简介"><span class="toc-number">2.</span> <span class="toc-text">0x02 gMSA简介</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#0x03-使用gMSA"><span class="toc-number">3.</span> <span class="toc-text">0x03 使用gMSA</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#新建gMSA"><span class="toc-number">3.1.</span> <span class="toc-text">新建gMSA</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#使用gMSA配置服务"><span class="toc-number">3.2.</span> <span class="toc-text">使用gMSA配置服务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#使用gMSA配置计划任务"><span class="toc-number">3.3.</span> <span class="toc-text">使用gMSA配置计划任务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#使用gMSA应用程序池标识"><span class="toc-number">3.4.</span> <span class="toc-text">使用gMSA应用程序池标识</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#0x04-gMSA攻击面"><span class="toc-number">4.</span> <span class="toc-text">0x04 gMSA攻击面</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#0x05-总结"><span class="toc-number">5.</span> <span class="toc-text">0x05 总结</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#0x06-参考链接"><span class="toc-number">6.</span> <span class="toc-text">0x06 参考链接</span></a></li></ol></div></div><div class="author-info hide"><div class="author-info__avatar text-center"><img src="/img/avatar.png"></div><div class="author-info__name text-center">rootrain</div><div class="author-info__description text-center"></div><hr><div class="author-info-articles"><a class="author-info-articles__archives article-meta" href="/archives"><span class="pull-left">Articles</span><span class="pull-right">12</span></a><a class="author-info-articles__tags article-meta" href="/tags"><span class="pull-left">Tags</span><span class="pull-right">8</span></a><a class="author-info-articles__categories article-meta" href="/categories"><span class="pull-left">Categories</span><span class="pull-right">6</span></a></div></div></div><div id="content-outer"><div class="no-bg" id="top-container"><div id="page-header"><span class="pull-left"> <a id="site-name" href="/">rootrain's Home</a></span><i class="fa fa-bars toggle-menu pull-right" aria-hidden="true"></i><span class="pull-right menus"><a class="site-page" href="/">Home</a><a class="site-page" href="/archives/">Archives</a><a class="site-page" href="/tags/">Tags</a><a class="site-page" href="/categories/">Categories</a></span></div><div id="post-info"><div id="post-title">浅析gMSA</div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 2020-02-29</time><span class="post-meta__separator">|</span><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/内网/">内网</a></div></div></div><div class="layout" id="content-inner"><article id="post"><div class="article-container" id="post-content"><p>最近bloodhound更新了3.0版本，其中有一个重要攻击路径，对gMSA（组托管服务账户）进行路线分析。默认情况下，任何经过域身份验证的用户都具有相关性，通过工具可以获取gMSA的hash进行横向移动，找到之前看不见的DA（到达domain admin）路径。</p>
+<a id="more"></a>
+<h1 id="0x01-静态密码"><a href="#0x01-静态密码" class="headerlink" title="0x01 静态密码"></a>0x01 静态密码</h1><p>在一般的环境中，管理人员通常会使用一些计划任务、服务等去完成服务器或功能的正常运转。但是如果任务需要跨机器工作，那就需要有一个用户账户。</p>
+<h2 id="密码使用场景"><a href="#密码使用场景" class="headerlink" title="密码使用场景"></a>密码使用场景</h2><p>比如在使用计划任务时，需要选择账户</p>
+<p><img src="/images/浅析gMSA/image-20200224160722750.png" alt></p>
+<p>或者在服务中也可以以某个账户启动</p>
+<p><img src="/images/浅析gMSA/image-20200224164732819.png" alt></p>
+<h2 id="静态密码产生的问题"><a href="#静态密码产生的问题" class="headerlink" title="静态密码产生的问题"></a>静态密码产生的问题</h2><p>在域环境中，一般会使用密码策略对用户进行定期更新，但是会出现一个问题，如果计算机过多、管理人员混乱、配置混乱的时候就会导致管理用户的时候无法做到及时对密码进行更新。一个简单的例子：在账户、服务过多的情况下，管理人员通常不会对它的密码进行更新，因为管理员不清楚该账户、服务是否重要，对其用户更新的时候会不会对其他服务产生连锁反应，导致功能不可用。</p>
+<p>因此，现实情况下当计算机管理混乱的时候，会有一些废弃的账户、计算机、服务。这极大得帮助了我们进行红队行动。废弃的用户、计算机往往能够产生许多<strong>不可知</strong>（管理员不知道）的攻击路径。</p>
+<h1 id="0x02-gMSA简介"><a href="#0x02-gMSA简介" class="headerlink" title="0x02 gMSA简介"></a>0x02 gMSA简介</h1><p>通过了解以上静态密码的弱点，微软提出了gMSA（组管理服务账户）解决多个用户密码的问题。在windows server 2012之后，通过gMSA可以使服务或服务管理员无需管理服务实例之间的密码同步。gMSA的密码由域控制器管理，每30天自动更改一次（默认情况下），并且由128个字符组成（无法猜测）。这完美解决了冗余账户的问题，似乎一切都很棒，但是却引出了其他问题，大家请往下看。</p>
+<h1 id="0x03-使用gMSA"><a href="#0x03-使用gMSA" class="headerlink" title="0x03 使用gMSA"></a>0x03 使用gMSA</h1><p>要使用gMSA，必须要满足Windows官方要求：</p>
+<p><strong>Operating system requirements</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">Element</th>
+<th style="text-align:left">Requirement</th>
+<th style="text-align:left">Operating system</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">Client Application host</td>
+<td style="text-align:left">RFC compliant Kerberos client</td>
+<td style="text-align:left">At least Windows XP</td>
+</tr>
+<tr>
+<td style="text-align:left">User account’s domain DCs</td>
+<td style="text-align:left">RFC compliant KDC</td>
+<td style="text-align:left">At least Windows Server 2003</td>
+</tr>
+<tr>
+<td style="text-align:left">Shared service member hosts</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">Windows Server 2012</td>
+</tr>
+<tr>
+<td style="text-align:left">Member host’s domain DCs</td>
+<td style="text-align:left">RFC compliant KDC</td>
+<td style="text-align:left">At least Windows Server 2003</td>
+</tr>
+<tr>
+<td style="text-align:left">gMSA account’s domain DCs</td>
+<td style="text-align:left">Windows Server 2012 DCs available for host to retrieve the password</td>
+<td style="text-align:left">Domain with Windows Server 2012 which can have some systems earlier than Windows Server 2012</td>
+</tr>
+<tr>
+<td style="text-align:left">Backend service host</td>
+<td style="text-align:left">RFC compliant Kerberos application server</td>
+<td style="text-align:left">At least Windows Server 2003</td>
+</tr>
+<tr>
+<td style="text-align:left">Backend service account’s domain DCs</td>
+<td style="text-align:left">RFC compliant KDC</td>
+<td style="text-align:left">At least Windows Server 2003</td>
+</tr>
+<tr>
+<td style="text-align:left">Windows PowerShell for Active Directory</td>
+<td style="text-align:left">Windows PowerShell for Active Directory installed locally on a computer supporting a 64-bit architecture or on your remote management computer (for example, using the Remote Server Administration Toolkit)</td>
+<td style="text-align:left">Windows Server 2012</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Active Directory Domain Service requirements</strong></p>
+<ul>
+<li><p>The Active Directory schema in the gMSA domain’s forest needs to be updated to Windows Server 2012 to create a gMSA.</p>
+<p>You can update the schema by installing a domain controller that runs Windows Server 2012 or by running the version of adprep.exe from a computer running Windows Server 2012 . The object-version attribute value for the object CN=Schema,CN=Configuration,DC=Contoso,DC=Com must be 52.</p>
+</li>
+<li><p>New gMSA account provisioned</p>
+</li>
+<li><p>If you are managing the service host permission to use gMSA by group, then new or existing security group</p>
+</li>
+<li><p>If managing service access control by group, then new or existing security group</p>
+</li>
+<li><p>If the first master root key for Active Directory is not deployed in the domain or has not been created, then create it. The result of its creation can be verified in the KdsSvc Operational log, Event ID 4004.</p>
+</li>
+</ul>
+<p>当一切准备就绪的时候，gMSA就可以工作：</p>
+<ol>
+<li>创建gMSA时，DC会分配一个复杂的密码。</li>
+<li>如果在授权使用该gMSA的服务器上使用了gMSA，则该服务器将使用SecureChannel向DC请求当前密码并保存。</li>
+<li>DC监视所有gMSA的密码使用期限。如果密码从gMSA过期，则DC将对其进行更改。</li>
+<li>如果使用的gMSA的TGT（票证授予票证）在服务器上失去其有效性，则服务器将续签其注册。他通过SecureChannel与DC联系，并学习新密码。</li>
+</ol>
+<p>一台或多台AD计算机可以使用gMSA。一台AD计算机也可以使用一个或多个gMSA。</p>
+<h2 id="新建gMSA"><a href="#新建gMSA" class="headerlink" title="新建gMSA"></a>新建gMSA</h2><p>需要kds-rootkey，在powershell中执行<strong>Get-KdsRootKey</strong>可以查询，如果没有返回空。</p>
+<p><img src="/images/浅析gMSA/image-20200224171533234.png" alt></p>
+<p>为Active Directory中的Microsoft组KdsSvc生成新的根密钥</p>
+<p>比如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Add-KdsRootKey</span><br></pre></td></tr></table></figure>
+<p>此命令为Active Directory中的Microsoft组KdsSvc生成新的根密钥。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Add-KdsRootKey -EffectiveImmediately</span><br></pre></td></tr></table></figure>
+<p>此命令立即生成一个新的根密钥，并将其添加到Microsoft Group KdsSvc。默认有10个小时的限制。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Add-KdsRootKey -EffectiveTime 03/06/2013</span><br></pre></td></tr></table></figure>
+<p>如果未指定时间，则默认日期设置为当前日期之后的10天</p>
+<p>该命令为Microsoft Group KdsSvc生成一个新的根密钥，该根密钥将于2013年3月6日生效。使用mm / dd / yyyy格式。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Add-KdsRootKey -LocalTestOnly</span><br></pre></td></tr></table></figure>
+<p>此命令仅在本地主机上生成一个新的根密钥。</p>
+<p><img src="/images/浅析gMSA/image-20200224180418854.png" alt></p>
+<p>这里需要注意的是，为了能够马上使用你的kds-rootkey，需要加上参数adddays或者addhours，使其马上生效。</p>
+<p>接下来可以创建gMSA，创建gMSA必须使用powershell：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">New-ADServiceAccount -Name New-gMSA -DNSHostName AD.rootrain.local -PrincipalsAllowedToRetrieveManagedPassword AD$,DESKTOP-74D7I8L$</span><br><span class="line">Install-ADServiceAccount -Identity New-gMSA</span><br></pre></td></tr></table></figure>
+<p><img src="/images/浅析gMSA/image-20200224175817515.png" alt></p>
+<p>检查是否成功</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Test-ADServiceAccount New-gMSA</span><br></pre></td></tr></table></figure>
+<p><img src="/images/浅析gMSA/image-20200225000707353.png" alt></p>
+<p>打开<strong>dsa.msc</strong>我们可以看到新建的gMSA。</p>
+<p><img src="/images/浅析gMSA/image-20200224204241245.png" alt></p>
+<p>也可以更改密码更改的时间（默认情况下为30天）：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Set-ADServiceAccount New-gMSA-ManagedPasswordIntervalInDays 60</span><br></pre></td></tr></table></figure>
+<h2 id="使用gMSA配置服务"><a href="#使用gMSA配置服务" class="headerlink" title="使用gMSA配置服务"></a>使用gMSA配置服务</h2><p>创建完gMSA后，我们可以打开<strong>service.msc</strong>对服务的账户进行配置。（这台是域用户主机，不是域控，实现了跨机器管理）</p>
+<p><img src="/images/浅析gMSA/image-20200225010327064.png" alt></p>
+<p>密码由KDC管理，留空就行，它会自动下发。服务需要重新启动。</p>
+<h2 id="使用gMSA配置计划任务"><a href="#使用gMSA配置计划任务" class="headerlink" title="使用gMSA配置计划任务"></a>使用gMSA配置计划任务</h2><p>gMSA令人诟病的一点就是只能通过powershell进行配置计划任务。直接创建计划任务无法找到该用户。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$action = New-ScheduledTaskAction powershell.exe -Argument &quot;-file c:\Scripts\Script.ps1&quot; -WorkingDirectory &quot;C:\WINDOWS\system32\WindowsPowerShell\v1.0&quot;</span><br><span class="line">$trigger = New-ScheduledTaskTrigger -At 00:21 -Daily</span><br><span class="line">$principal = New-ScheduledTaskPrincipal -UserID rootrain.local\New-gMSA$ -LogonType Password -RunLevel highest</span><br><span class="line">Register-ScheduledTask myAdminTask –Action $action –Trigger $trigger –Principal $principal</span><br></pre></td></tr></table></figure>
+<p><img src="/images/浅析gMSA/image-20200225000115042.png" alt></p>
+<h2 id="使用gMSA应用程序池标识"><a href="#使用gMSA应用程序池标识" class="headerlink" title="使用gMSA应用程序池标识"></a>使用gMSA应用程序池标识</h2><p><img src="/images/浅析gMSA/image-20200225011559592.png" alt></p>
+<h1 id="0x04-gMSA攻击面"><a href="#0x04-gMSA攻击面" class="headerlink" title="0x04 gMSA攻击面"></a>0x04 gMSA攻击面</h1><p>gMSA也是一个用户，在C:\Users\下可以看到会有gMSA用户的文件夹。</p>
+<p><img src="/images/浅析gMSA/image-20200225013415404.png" alt></p>
+<p>由于gMSA是特殊用户，无法通过直接查看到此用户或者所在组。我们可以通过ldap查询MSA可以看到。</p>
+<p><img src="/images/浅析gMSA/image-20200225105650773.png" alt></p>
+<p>通过查看bloodhound 3.0的sharphound源码也能看到获取gmsa的方式。</p>
+<p><img src="/images/浅析gMSA/image-20200225110657648.png" alt></p>
+<p><img src="/images/浅析gMSA/image-20200225111221210.png" alt></p>
+<p>或者在cobaltstrike中，查看进程也能查询到该用户。明显标识就是末尾会有一个$。</p>
+<p><img src="/images/浅析gMSA/image-20200225021742210.png" alt></p>
+<p>当我们识别到该用户的时候，我们可以直接滥用gMSA的hash（如果未打补丁）进行pth。</p>
+<p><img src="/images/浅析gMSA/image-20200225022958812.png" alt></p>
+<p>在mimikatz中我们也能够找到对应hash</p>
+<p><img src="/images/浅析gMSA/image-20200225023117951.png" alt></p>
+<p>使用bloodhound 3.0寻找攻击路径，由于我内网环境配的少或者其他原因，没有寻找到路径，但是查重gMSA用户也可以看到AD域与域用户之间的联系。</p>
+<p><img src="/images/浅析gMSA/image-20200225113331153.png" alt></p>
+<h1 id="0x05-总结"><a href="#0x05-总结" class="headerlink" title="0x05 总结"></a>0x05 总结</h1><ul>
+<li>gMSA是组托管服务账户</li>
+<li>静态密码容易遗忘或被攻击，gMSA可以解决这一缺陷（不可猜测）</li>
+<li>管理人员可通过gMSA批量管理机器，如服务、计划任务、数据库等</li>
+<li>测试Add-KdsRootKey -EffectiveTime 需要提前10天生效，方便测试</li>
+<li>gMSA与一般用户一样可以被滥用（未打补丁），覆盖面更大，可到域控</li>
+<li>Bloodhound 3.0 gMSA原理是通过ldap查询gMSA用户，从而列举出可用攻击路径</li>
+</ul>
+<h1 id="0x06-参考链接"><a href="#0x06-参考链接" class="headerlink" title="0x06 参考链接"></a>0x06 参考链接</h1><p><a href="https://posts.specterops.io/introducing-bloodhound-3-0-c00e77ff0aa6" target="_blank" rel="noopener">https://posts.specterops.io/introducing-bloodhound-3-0-c00e77ff0aa6</a></p>
+<p><a href="https://www.ws-its.de/group-managed-service-accounts-und-mein-gmsa-admin/" target="_blank" rel="noopener">https://www.ws-its.de/group-managed-service-accounts-und-mein-gmsa-admin/</a></p>
+<p><a href="https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/dd378925(v=ws.10)?redirectedfrom=MSDN" target="_blank" rel="noopener">https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/dd378925(v=ws.10)?redirectedfrom=MSDN</a></p>
+<p><a href="https://docs.microsoft.com/en-us/windows-server/security/group-managed-service-accounts/getting-started-with-group-managed-service-accounts" target="_blank" rel="noopener">https://docs.microsoft.com/en-us/windows-server/security/group-managed-service-accounts/getting-started-with-group-managed-service-accounts</a></p>
+<p><a href="https://docs.microsoft.com/en-us/powershell/module/kds/add-kdsrootkey?view=win10-ps" target="_blank" rel="noopener">https://docs.microsoft.com/en-us/powershell/module/kds/add-kdsrootkey?view=win10-ps</a></p>
+<p><a href="https://blog.kloud.com.au/2016/10/21/avoiding-windows-service-accounts-with-static-passwords-using-gmsas/" target="_blank" rel="noopener">https://blog.kloud.com.au/2016/10/21/avoiding-windows-service-accounts-with-static-passwords-using-gmsas/</a></p>
+<p><a href="http://woshub.com/group-managed-service-accounts-in-windows-server-2012/" target="_blank" rel="noopener">http://woshub.com/group-managed-service-accounts-in-windows-server-2012/</a></p>
+<p><a href="https://medium.com/tech-jobs-academy/creating-and-associating-a-group-managed-service-account-19843050a6a6" target="_blank" rel="noopener">https://medium.com/tech-jobs-academy/creating-and-associating-a-group-managed-service-account-19843050a6a6</a></p>
+<p><a href="https://pisquare.osisoft.com/groups/security/blog/2018/04/11/introduction-to-group-managed-service-accounts" target="_blank" rel="noopener">https://pisquare.osisoft.com/groups/security/blog/2018/04/11/introduction-to-group-managed-service-accounts</a></p>
+<p><a href="http://www.rebeladmin.com/2018/02/step-step-guide-work-group-managed-service-accounts-gmsa-powershell-guide/" target="_blank" rel="noopener">http://www.rebeladmin.com/2018/02/step-step-guide-work-group-managed-service-accounts-gmsa-powershell-guide/</a></p>
+<p><a href="https://www.tutorialspoint.com/windows_server_2012/windows_server_2012_group_managed_service_accounts.htm" target="_blank" rel="noopener">https://www.tutorialspoint.com/windows_server_2012/windows_server_2012_group_managed_service_accounts.htm</a></p>
+<p><a href="https://github.com/BloodHoundAD/SharpHound3" target="_blank" rel="noopener">https://github.com/BloodHoundAD/SharpHound3</a></p>
+</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="mailto:undefined">rootrain</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="https://rootrain.me/2020/02/29/浅析gMSA/">https://rootrain.me/2020/02/29/浅析gMSA/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/gMSA-bloodhound/">gMSA,bloodhound</a></div><nav id="pagination"><div class="prev-post pull-left"><a href="/2020/02/29/bloodhound技术分析/"><i class="fa fa-chevron-left">  </i><span>bloodhound技术分析</span></a></div><div class="next-post pull-right"><a href="/2020/02/29/内网防御规避(二)-命令行混淆/"><span>内网防御规避(二)-命令行混淆</span><i class="fa fa-chevron-right"></i></a></div></nav></div></div><footer><div class="layout" id="footer"><div class="copyright">&copy;2019 - 2020 By rootrain</div><div class="framework-info"></div><div class="busuanzi"><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><span id="busuanzi_container_page_pv"><i class="fa fa-file"></i><span id="busuanzi_value_page_pv"></span><span></span></span></div></div></footer><i class="fa fa-arrow-up" id="go-up" aria-hidden="true"></i><script src="https://cdn.jsdelivr.net/npm/animejs@latest/anime.min.js"></script><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-animate@latest/velocity.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-ui-pack@latest/velocity.ui.min.js"></script><script src="/js/utils.js?version=1.6.1"></script><script src="/js/fancybox.js?version=1.6.1"></script><script src="/js/sidebar.js?version=1.6.1"></script><script src="/js/copy.js?version=1.6.1"></script><script src="/js/fireworks.js?version=1.6.1"></script><script src="/js/transition.js?version=1.6.1"></script><script src="/js/scroll.js?version=1.6.1"></script><script src="/js/head.js?version=1.6.1"></script><script>if(/Android|webOS|iPhone|iPod|BlackBerry/i.test(navigator.userAgent)) {
+  $('#nav').addClass('is-mobile')
+  $('footer').addClass('is-mobile')
+}</script></body></html>

